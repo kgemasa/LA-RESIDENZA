@@ -152,13 +152,13 @@
         }
 
         .room-item.occupied {
-            background: #f0f9f7;
-            border-left: 3px solid #2d9b7c;
+            background: #fff3cd;
+            border-left: 3px solid #d4a574;
         }
 
         .room-item.available {
-            background: #fef9f3;
-            border-left: 3px solid #d4a574;
+            background: #f0f9f7;
+            border-left: 3px solid #2d9b7c;
         }
 
         .room-number {
@@ -304,6 +304,7 @@
                         <th>Current Rate (THB)</th>
                         <th>Move-in Date</th>
                         <th>Lease End Date</th>
+                        <th>Duration</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
@@ -328,19 +329,29 @@
         }
 
         function formatDate(dateValue) {
-            if (!dateValue || dateValue === 0) return '—';
-            if (typeof dateValue === 'string') return dateValue;
+            if (!dateValue || dateValue === 0 || dateValue === '') return '—';
             
-            // Google Sheets returns dates as numbers (days since epoch)
-            // Excel epoch is Dec 30, 1899
-            const excelEpoch = new Date(1899, 11, 30);
-            const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+            // If it's a string with timestamp (e.g., "2025-09-15T17:00:00.000Z")
+            if (typeof dateValue === 'string') {
+                // Extract just the date part (YYYY-MM-DD)
+                const dateOnly = dateValue.split('T')[0];
+                if (dateOnly) {
+                    return dateOnly;
+                }
+            }
             
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
+            // If it's a date object or number
+            if (typeof dateValue === 'number') {
+                const excelEpoch = new Date(1899, 11, 30);
+                const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            }
+            
+            return '—';
         }
 
         function renderDashboard(data) {
@@ -421,7 +432,7 @@
             const occupiedRooms = data.inventory.filter(r => r['Current Status'] === 'OCCUPIED');
             
             if (occupiedRooms.length === 0) {
-                tenantTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No occupied units</td></tr>';
+                tenantTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #999;">No occupied units</td></tr>';
             } else {
                 tenantTableBody.innerHTML = occupiedRooms.map(room => `
                     <tr>
@@ -431,6 +442,7 @@
                         <td>${formatCurrency(room['Current Rate (THB)'])}</td>
                         <td>${formatDate(room['Move-in Date (DD/MM/YYYY)'])}</td>
                         <td>${formatDate(room['Lease-End Date'])}</td>
+                        <td>${room['Lease Duration'] || '—'}</td>
                         <td>${room['Notes'] || '—'}</td>
                     </tr>
                 `).join('');
