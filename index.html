@@ -515,7 +515,7 @@
             document.getElementById('totalUnits').textContent = stats.totalUnits;
             document.getElementById('occupiedCount').textContent = stats.occupiedCount;
             document.getElementById('availableCount').textContent = stats.availableCount;
-            document.getElementById('occupancyRate').textContent = (stats.occupancyRate).toFixed(1) + '%';
+            document.getElementById('occupancyRate').textContent = stats.occupancyRate + '%';
             document.getElementById('monthlyRevenue').textContent = formatCurrency(stats.monthlyRevenue);
 
             // Render rooms with filters
